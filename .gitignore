@@ -1,0 +1,64 @@
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environments
+venv/
+env/
+.venv/
+
+# ========================
+# Django
+# ========================
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+backend/media/
+backend/staticfiles/
+
+# ========================
+# Node / React
+# ========================
+node_modules/
+frontend/dist/
+frontend/build/
+.next/
+
+# ========================
+# Environment & Secrets
+# ========================
+.env
+.env.local
+.env.*.local
+
+# ========================
+# Docker
+# ========================
+# Don't ignore docker-compose.yml or Dockerfiles
+# but ignore runtime data
+postgres_data/
+
+# ========================
+# IDE / Editor
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ========================
+# FAISS Index (generated, not source code)
+# ========================
+ai_service/faiss_index/*.index
+ai_service/faiss_index/*.pkl
