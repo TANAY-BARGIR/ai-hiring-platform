@@ -43,9 +43,8 @@ class ResumeUploadView(generics.CreateAPIView):
     Upload a new resume PDF.
 
     Automatically sets is_primary=True (which deactivates previous resumes
-    via the Resume.save() method). Sets processing_status to PENDING.
-
-    TODO (Phase 2): After saving, trigger FastAPI /process-resume endpoint.
+    via the Resume.save() method). After saving, triggers the FastAPI
+    AI service to process the resume in the background.
     """
 
     serializer_class = ResumeSerializer
@@ -56,14 +55,15 @@ class ResumeUploadView(generics.CreateAPIView):
         candidate = self.request.user.candidate_profile
         uploaded_file = self.request.FILES.get('file')
 
-        serializer.save(
+        resume = serializer.save(
             candidate=candidate,
             original_filename=uploaded_file.name if uploaded_file else 'unknown',
             is_primary=True,
         )
-        # TODO: Trigger FastAPI processing
-        # from .services import trigger_resume_processing
-        # trigger_resume_processing(resume)
+
+        # Trigger FastAPI processing (non-blocking — fails gracefully)
+        from .services import trigger_resume_processing
+        trigger_resume_processing(resume)
 
 
 class ResumeListView(generics.ListAPIView):
