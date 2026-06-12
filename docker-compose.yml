@@ -1,0 +1,143 @@
+# ==============================================================================
+# AI Hiring Platform — Docker Compose
+# ==============================================================================
+#
+# Services:
+#   db         — PostgreSQL 16 (persistent data volume)
+#   backend    — Django + DRF (business logic, auth, CRUD)
+#   ai_service — FastAPI (resume parsing, RAG, semantic search)
+#
+# Shared Resources:
+#   resume_storage — Volume shared between backend and ai_service
+#   faiss_data     — FAISS index persistence
+#   postgres_data  — PostgreSQL data persistence
+#
+# Networks:
+#   hiring_network — Internal network for service-to-service communication
+#
+# Usage:
+#   Development: docker compose up --build
+#   Production:  docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+#
+# ==============================================================================
+
+services:
+
+  # --------------------------------------------------------------------------
+  # PostgreSQL Database
+  # --------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: hiring_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-hiring_platform}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5433:5432"  # 5433 externally to avoid conflict with local PostgreSQL
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - hiring_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-hiring_platform}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --------------------------------------------------------------------------
+  # Django Backend (Business Logic)
+  # --------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hiring_backend
+    restart: unless-stopped
+    # Development override: use runserver with auto-reload
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    environment:
+      # Database — uses Docker service name as host
+      DB_NAME: ${DB_NAME:-hiring_platform}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_HOST: db
+      DB_PORT: 5432
+      # Django
+      DJANGO_SETTINGS_MODULE: config.settings.development
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-django-insecure-docker-dev-key}
+      # Internal communication — uses Docker service name
+      AI_SERVICE_URL: http://ai_service:8001
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-dev-internal-token}
+    ports:
+      - "8000:8000"
+    volumes:
+      # Live reload: mount source code for development
+      - ./backend:/app
+      # Shared volume: resumes accessible by both services
+      - resume_storage:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hiring_network
+
+  # --------------------------------------------------------------------------
+  # FastAPI AI Service (Resume Processing, RAG, Search)
+  # --------------------------------------------------------------------------
+  ai_service:
+    build:
+      context: ./ai_service
+      dockerfile: Dockerfile
+    container_name: hiring_ai_service
+    restart: unless-stopped
+    # Development override: use uvicorn with auto-reload
+    command: >
+      uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+    environment:
+      # Database — read-only access to Django's PostgreSQL
+      DB_NAME: ${DB_NAME:-hiring_platform}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_HOST: db
+      DB_PORT: 5432
+      # Django callback — uses Docker service name
+      DJANGO_CALLBACK_URL: http://backend:8000/api/internal
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-dev-internal-token}
+      # NVIDIA API
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+    ports:
+      - "8001:8001"
+    volumes:
+      # Live reload: mount source code for development
+      - ./ai_service:/app
+      # Shared volume: read resume files uploaded by Django
+      - resume_storage:/app/media:ro
+      # FAISS index persistence
+      - faiss_data:/app/faiss_index
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hiring_network
+
+# ==============================================================================
+# Volumes
+# ==============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  resume_storage:
+    driver: local
+  faiss_data:
+    driver: local
+
+# ==============================================================================
+# Networks
+# ==============================================================================
+networks:
+  hiring_network:
+    driver: bridge

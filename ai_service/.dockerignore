@@ -1,0 +1,33 @@
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+
+# ========================
+# FAISS index (volume-mounted at runtime)
+# ========================
+faiss_index/*.index
+faiss_index/*.pkl
+
+# ========================
+# IDE / Editor
+# ========================
+.vscode/
+.idea/
+*.swp
+
+# ========================
+# Git
+# ========================
+.git
+.gitignore
+
+# ========================
+# Docker
+# ========================
+Dockerfile
+docker-compose.yml
