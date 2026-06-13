@@ -32,8 +32,15 @@ class Settings(BaseSettings):
     DJANGO_CALLBACK_URL: str = "http://localhost:8000/api/internal"
     INTERNAL_API_TOKEN: str = "dev-internal-token-change-in-production"
 
-    # ---- NVIDIA API ----
-    NVIDIA_API_KEY: str = ""
+    # ---- NVIDIA API Keys (one per model, each has its own free-tier quota) ----
+    NVIDIA_LLM_API_KEY: str = ""        # For Llama 3.1 70B (skill extraction)
+    NVIDIA_EMBED_API_KEY: str = ""      # For nv-embedqa-e5-v5 (embeddings)
+    NVIDIA_CHAT_API_KEY: str = ""       # For Llama 3.1 8B (RAG chat, Phase 4)
+
+    # ---- NVIDIA Model Names (centralized — never hardcoded in service files) ----
+    LLM_MODEL: str = "meta/llama-3.1-70b-instruct"
+    EMBED_MODEL: str = "nvidia/nv-embedqa-e5-v5"
+    CHAT_MODEL: str = "meta/llama-3.1-8b-instruct"
 
     # ---- FAISS ----
     FAISS_INDEX_PATH: str = "faiss_index"

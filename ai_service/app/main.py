@@ -14,7 +14,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import health, parsing
+from app.routers import health, parsing, search
 
 # ---- Logging setup ----
 logging.basicConfig(
@@ -47,6 +47,7 @@ app.add_middleware(
 # ---- Register routers ----
 app.include_router(health.router)
 app.include_router(parsing.router)
+app.include_router(search.router)
 
 
 @app.get("/")

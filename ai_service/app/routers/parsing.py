@@ -1,8 +1,10 @@
 """
 Resume parsing router.
 
-Receives processing triggers from Django, runs background tasks,
-and sends results back via callback.
+Receives processing triggers from Django, runs the full AI pipeline
+as a background task, and sends results back via callback.
+
+Pipeline: PDF → Text → Skills (LLM) → Chunks → Embeddings → FAISS
 """
 
 import logging
@@ -12,6 +14,14 @@ from fastapi import APIRouter, BackgroundTasks, Header, HTTPException
 from app.config import settings
 from app.schemas.parsing import ProcessResumeRequest
 from app.callbacks.django_client import send_resume_callback
+from app.services.pdf_extractor import extract_text_from_pdf
+from app.services.skill_extractor import extract_skills
+from app.services.chunker import chunk_text
+from app.services.embeddings import generate_embeddings
+from app.services.vector_store import (
+    add_embeddings,
+    remove_resume_embeddings,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,42 +40,98 @@ async def _process_resume_task(
     file_path: str,
 ):
     """
-    Background task: processes a resume file.
+    Background task: Full AI resume processing pipeline.
 
-    Current implementation is a STUB — it simulates processing
-    and returns dummy skills. Will be replaced with real AI pipeline
-    (PDF extraction → skill extraction → embeddings → FAISS) in Phase 3.
+    Steps:
+      1. Extract text from PDF (PyMuPDF)
+      2. Extract skills via LLM (Llama 3.1 70B / fallback regex)
+      3. Chunk text for embeddings (LangChain splitter)
+      4. Generate embeddings (nv-embedqa-e5-v5 / skipped if no API key)
+      5. Update FAISS index
+      6. Callback to Django with results
     """
     logger.info(
-        f"Processing resume {resume_id} for candidate {candidate_id} "
+        f"[Pipeline Start] Resume {resume_id} for candidate {candidate_id} "
         f"(file: {file_path})"
     )
 
     try:
         # ============================================================
-        # STUB: Simulate processing
-        # In Phase 2/3, this will be replaced with:
-        # 1. PDF text extraction (PyMuPDF)
-        # 2. Skill extraction (LLM — Llama 3.1 70B via NVIDIA API)
-        # 3. Embedding generation (nv-embedqa-e5-v5)
-        # 4. FAISS index update
+        # Step 1: PDF Text Extraction
         # ============================================================
-        dummy_skills = [
-            {"skill_name": "Python", "confidence": 0.95},
-            {"skill_name": "Django", "confidence": 0.90},
-            {"skill_name": "REST APIs", "confidence": 0.85},
+        logger.info(f"[Step 1/5] Extracting text from PDF...")
+        resume_text = extract_text_from_pdf(file_path)
+        logger.info(f"[Step 1/5] ✓ Extracted {len(resume_text)} chars")
+
+        # ============================================================
+        # Step 2: LLM Skill Extraction
+        # ============================================================
+        logger.info(f"[Step 2/5] Extracting skills via LLM...")
+        extracted_skills = extract_skills(resume_text)
+        logger.info(
+            f"[Step 2/5] ✓ Extracted {len(extracted_skills)} skills: "
+            f"{[s['skill_name'] for s in extracted_skills[:5]]}"
+        )
+
+        # ============================================================
+        # Step 3: Text Chunking
+        # ============================================================
+        logger.info(f"[Step 3/5] Chunking text...")
+        chunks = chunk_text(resume_text, candidate_id, resume_id)
+        logger.info(f"[Step 3/5] ✓ Created {len(chunks)} chunks")
+
+        # ============================================================
+        # Step 4 & 5: Embeddings + FAISS Index Update
+        # ============================================================
+        if settings.NVIDIA_EMBED_API_KEY:
+            logger.info(f"[Step 4/5] Generating embeddings...")
+            chunk_texts = [c["text"] for c in chunks]
+            embeddings = generate_embeddings(chunk_texts)
+            logger.info(f"[Step 4/5] ✓ Generated embeddings: {embeddings.shape}")
+
+            # Remove old embeddings for this resume (if re-processing)
+            logger.info(f"[Step 5/5] Updating FAISS index...")
+            remove_resume_embeddings(resume_id)
+
+            # Add new embeddings
+            chunks_metadata = [c["metadata"] for c in chunks]
+            add_embeddings(embeddings, chunks_metadata)
+            logger.info(f"[Step 5/5] ✓ FAISS index updated")
+        else:
+            logger.warning(
+                "[Step 4-5/5] Skipped — NVIDIA_EMBED_API_KEY not set. "
+                "Skills extracted via fallback, but no embeddings/FAISS."
+            )
+
+        # ============================================================
+        # Step 6: Callback to Django
+        # ============================================================
+        skill_dicts = [
+            {"skill_name": s["skill_name"], "confidence": s["confidence"]}
+            for s in extracted_skills
         ]
 
-        # Send results back to Django
         await send_resume_callback(
             resume_id=resume_id,
             processing_status="READY",
-            extracted_skills=dummy_skills,
+            extracted_skills=skill_dicts,
         )
-        logger.info(f"Resume {resume_id} processed successfully (stub)")
+
+        logger.info(
+            f"[Pipeline Complete] Resume {resume_id} ✓ "
+            f"({len(extracted_skills)} skills, {len(chunks)} chunks)"
+        )
+
+    except FileNotFoundError as e:
+        logger.error(f"[Pipeline Failed] Resume {resume_id}: {e}")
+        await send_resume_callback(
+            resume_id=resume_id,
+            processing_status="FAILED",
+            failure_reason=f"PDF not found: {file_path}",
+        )
 
     except Exception as e:
-        logger.error(f"Resume {resume_id} processing failed: {e}")
+        logger.error(f"[Pipeline Failed] Resume {resume_id}: {e}", exc_info=True)
         await send_resume_callback(
             resume_id=resume_id,
             processing_status="FAILED",
