@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/candidates/', include('apps.candidates.urls')),
     path('api/recruiters/', include('apps.recruiters.urls')),
     path('api/jobs/', include('apps.jobs.urls')),
+    path('api/search/', include('apps.search.urls')),
 
     # Internal API (service-to-service — token auth)
     path('api/internal/', include('apps.candidates.internal_urls')),

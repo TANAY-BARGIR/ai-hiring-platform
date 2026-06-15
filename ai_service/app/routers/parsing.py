@@ -93,8 +93,11 @@ async def _process_resume_task(
             logger.info(f"[Step 5/5] Updating FAISS index...")
             remove_resume_embeddings(resume_id)
 
-            # Add new embeddings
-            chunks_metadata = [c["metadata"] for c in chunks]
+            # Add new embeddings (include text in metadata for RAG retrieval)
+            chunks_metadata = [
+                {**c["metadata"], "text": c["text"]}
+                for c in chunks
+            ]
             add_embeddings(embeddings, chunks_metadata)
             logger.info(f"[Step 5/5] ✓ FAISS index updated")
         else:

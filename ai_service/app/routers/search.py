@@ -39,10 +39,10 @@ async def semantic_search(
     if x_internal_token != settings.INTERNAL_API_TOKEN:
         raise HTTPException(status_code=403, detail="Invalid internal token")
 
-    if not settings.NVIDIA_API_KEY:
+    if not settings.NVIDIA_EMBED_API_KEY:
         raise HTTPException(
             status_code=503,
-            detail="Semantic search unavailable — NVIDIA_API_KEY not configured",
+            detail="Semantic search unavailable — NVIDIA_EMBED_API_KEY not configured",
         )
 
     try:
