@@ -1,0 +1,185 @@
+
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/60 backdrop-blur-xl border-b border-white/10 shadow-sm flex justify-between items-center px-margin-desktop py-unit-md max-w-container-max mx-auto">
+<div class="font-display-lg text-display-lg font-bold text-primary">Nexus AI</div>
+<div class="hidden md:flex gap-unit-lg items-center">
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-white/5 transition-all duration-300 px-3 py-2 rounded-md font-body-md text-body-md cursor-pointer active:scale-95 transition-transform" href="#">Talent Pool</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-white/5 transition-all duration-300 px-3 py-2 rounded-md font-body-md text-body-md cursor-pointer active:scale-95 transition-transform" href="#">Interviews</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-white/5 transition-all duration-300 px-3 py-2 rounded-md font-body-md text-body-md cursor-pointer active:scale-95 transition-transform" href="#">Analytics</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-white/5 transition-all duration-300 px-3 py-2 rounded-md font-body-md text-body-md cursor-pointer active:scale-95 transition-transform" href="#">Pipeline</a>
+</div>
+<div class="flex gap-unit-md items-center">
+<button class="text-primary hover:bg-white/5 transition-all duration-300 px-4 py-2 rounded-lg font-body-md text-body-md cursor-pointer active:scale-95 transition-transform" onclick="openSignInModal()">Sign In</button>
+<button class="bg-primary text-on-primary hover:opacity-90 transition-opacity px-6 py-2 rounded-lg font-body-md text-body-md font-semibold cursor-pointer active:scale-95 transition-transform">Join Nexus</button>
+</div>
+</nav>
+<main class="flex-grow pt-[120px] pb-unit-xl px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto relative w-full">
+<div class="bg-glow"></div>
+<!-- Hero Section -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center min-h-[614px]">
+<div class="flex flex-col gap-unit-lg z-10">
+<h1 class="font-display-lg text-display-lg md:text-[64px] leading-tight font-bold">
+                    Find Top Talent with <br/>
+<span class="text-gradient">Semantic Search</span><br/>
+                    &amp; Chat with Resumes
+                </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl text-lg">
+                    Nexus AI provides an elite intelligence layer for modern talent acquisition. Discover perfect matches instantly and interact with candidate histories through advanced RAG-powered conversations.
+                </p>
+<div class="flex gap-unit-md mt-unit-sm">
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg font-headline-lg-mobile text-headline-lg-mobile cursor-pointer hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(208,188,255,0.3)]">Get Started</button>
+<button class="border border-outline-variant text-primary px-8 py-3 rounded-lg font-headline-lg-mobile text-headline-lg-mobile cursor-pointer hover:bg-white/5 transition-colors">View Demo</button>
+</div>
+</div>
+<div class="relative h-[400px] lg:h-[500px] w-full flex justify-center items-center rounded-xl overflow-hidden glass-card z-0">
+<!-- Abstract Neural Network Visualization Placeholder -->
+<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&amp;fit=crop&amp;q=80')] bg-cover bg-center opacity-30 mix-blend-screen" data-alt="A sophisticated abstract 3D visualization of a neural network glowing in deep space. Nodes connected by luminous data streams in shades of electric violet and cyan. The background is a profound slate dark, emphasizing the brilliant, high-tech nature of the AI processing core. Premium, cinematic lighting."></div>
+<div class="relative text-center p-unit-lg">
+<span class="material-symbols-outlined text-[80px] text-primary mb-4 drop-shadow-[0_0_15px_rgba(208,188,255,0.5)]">bubble_chart</span>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Intelligence Layer Active</h3>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="mt-[120px]">
+<h2 class="font-headline-lg text-headline-lg text-center mb-unit-xl">Platform Capabilities</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Feature 1 -->
+<div class="glass-card rounded-xl p-unit-lg flex flex-col gap-unit-md group transition-all duration-300">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center mb-unit-sm border border-outline-variant group-hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-primary">manage_search</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Semantic Match</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        Go beyond keywords. Our embedding models understand context, skills, and potential, surfacing candidates that truly fit the role requirements.
+                    </p>
+</div>
+<!-- Feature 2 -->
+<div class="glass-card rounded-xl p-unit-lg flex flex-col gap-unit-md group transition-all duration-300 md:col-span-2 md:row-span-2 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-secondary/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center mb-unit-sm border border-outline-variant group-hover:border-secondary transition-colors z-10">
+<span class="material-symbols-outlined text-secondary">forum</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-on-surface z-10">Resume RAG Chat</h3>
+<p class="font-body-md text-body-md text-on-surface-variant z-10 max-w-md">
+                        Transform static PDFs into interactive conversations. Query a candidate's entire work history instantly to extract specific project details and metric impacts.
+                    </p>
+<div class="mt-auto pt-unit-lg z-10">
+<div class="bg-surface-container-low rounded-lg p-unit-md border border-outline-variant/50 flex flex-col gap-unit-sm">
+<div class="flex gap-3 items-start">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary text-sm">person</span></div>
+<div class="bg-surface p-3 rounded-lg rounded-tl-none border border-outline-variant/30 font-body-md text-sm">What was Sarah's impact on the Q3 revenue?</div>
+</div>
+<div class="flex gap-3 items-start flex-row-reverse">
+<div class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-secondary text-sm">smart_toy</span></div>
+<div class="bg-surface-bright p-3 rounded-lg rounded-tr-none border border-outline-variant/30 font-body-md text-sm text-right">Sarah led the enterprise integration team, resulting in a 24% increase in Q3 SaaS revenue.</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Feature 3 -->
+<div class="glass-card rounded-xl p-unit-lg flex flex-col gap-unit-md group transition-all duration-300">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center mb-unit-sm border border-outline-variant group-hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-primary">bolt</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Real-time Processing</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        Ingest and index thousands of profiles in seconds. Our high-performance architecture ensures you're always acting on live data.
+                    </p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-unit-xl border-t border-white/5 bg-surface flex flex-col md:flex-row justify-between items-center px-margin-desktop gap-gutter z-10">
+<div class="font-display-lg text-display-lg font-bold text-primary">Nexus AI</div>
+<div class="flex gap-gutter items-center flex-wrap justify-center">
+<a class="font-label-sm text-label-sm font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors transition-opacity hover:opacity-80" href="#">API Documentation</a>
+<a class="font-label-sm text-label-sm font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors transition-opacity hover:opacity-80" href="#">Algorithm Transparency</a>
+<a class="font-label-sm text-label-sm font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors transition-opacity hover:opacity-80" href="#">Privacy Protocol</a>
+<a class="font-label-sm text-label-sm font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors transition-opacity hover:opacity-80" href="#">System Status</a>
+</div>
+<div class="font-label-sm text-label-sm font-body-md text-body-md text-secondary text-sm">
+            © 2024 Nexus AI Intelligence Layer. All rights reserved.
+        </div>
+</footer>
+<!-- Sign In Modal (Hidden by default) -->
+<div class="fixed inset-0 z-[100] hidden items-center justify-center p-4" id="signInModal">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-background/80 backdrop-blur-sm" onclick="closeSignInModal()"></div>
+<!-- Modal Content -->
+<div class="glass-card relative w-full max-w-md rounded-xl p-unit-lg shadow-[0_0_40px_rgba(109,59,215,0.15)] flex flex-col gap-unit-md border border-primary/20">
+<div class="flex justify-between items-center mb-unit-sm">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile">Sign In</h2>
+<button class="text-on-surface-variant hover:text-on-surface" onclick="closeSignInModal()"><span class="material-symbols-outlined">close</span></button>
+</div>
+<div class="flex gap-2 p-1 bg-surface-container-low rounded-lg mb-4">
+<button class="flex-1 py-2 text-sm font-medium rounded-md bg-secondary text-on-secondary shadow-sm transition-all" id="btnCandidate" onclick="selectRole('candidate')">Candidate</button>
+<button class="flex-1 py-2 text-sm font-medium rounded-md text-on-surface-variant hover:text-on-surface transition-all" id="btnRecruiter" onclick="selectRole('recruiter')">Recruiter</button>
+</div>
+<div class="flex flex-col gap-4">
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Email</label>
+<input class="w-full bg-surface border border-outline-variant rounded-md px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="name@example.com" type="email"/>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Password</label>
+<input class="w-full bg-surface border border-outline-variant rounded-md px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="••••••••" type="password"/>
+</div>
+<div class="hidden" id="companyField">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Company Workspace</label>
+<input class="w-full bg-surface border border-outline-variant rounded-md px-3 py-2 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="acme-corp" type="text"/>
+</div>
+</div>
+<button class="w-full mt-4 bg-primary text-on-primary py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity">Continue</button>
+</div>
+</div>
+<script>
+        // Modal Logic
+        const modal = document.getElementById('signInModal');
+        const companyField = document.getElementById('companyField');
+        const btnCandidate = document.getElementById('btnCandidate');
+        const btnRecruiter = document.getElementById('btnRecruiter');
+
+        function openSignInModal() {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // Reset to Candidate by default on open
+            selectRole('candidate');
+        }
+
+        function closeSignInModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function selectRole(role) {
+            if (role === 'recruiter') {
+                companyField.classList.remove('hidden');
+                
+                // Style buttons for Recruiter active
+                btnRecruiter.classList.remove('text-on-surface-variant', 'hover:text-on-surface');
+                btnRecruiter.classList.add('bg-primary', 'text-on-primary', 'shadow-sm');
+                
+                btnCandidate.classList.remove('bg-secondary', 'text-on-secondary', 'shadow-sm');
+                btnCandidate.classList.add('text-on-surface-variant', 'hover:text-on-surface');
+                
+                // Update modal glow context
+                modal.classList.replace('shadow-[0_0_40px_rgba(76,215,246,0.15)]', 'shadow-[0_0_40px_rgba(109,59,215,0.15)]');
+                modal.classList.replace('border-secondary/20', 'border-primary/20');
+            } else {
+                companyField.classList.add('hidden');
+                
+                // Style buttons for Candidate active
+                btnCandidate.classList.remove('text-on-surface-variant', 'hover:text-on-surface');
+                btnCandidate.classList.add('bg-secondary', 'text-on-secondary', 'shadow-sm');
+                
+                btnRecruiter.classList.remove('bg-primary', 'text-on-primary', 'shadow-sm');
+                btnRecruiter.classList.add('text-on-surface-variant', 'hover:text-on-surface');
+
+                // Update modal glow context
+                modal.classList.replace('shadow-[0_0_40px_rgba(109,59,215,0.15)]', 'shadow-[0_0_40px_rgba(76,215,246,0.15)]');
+                modal.classList.replace('border-primary/20', 'border-secondary/20');
+            }
+        }
+    </script>
