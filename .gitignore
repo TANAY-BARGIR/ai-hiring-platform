@@ -62,3 +62,4 @@ postgres_data/
 # ========================
 ai_service/faiss_index/*.index
 ai_service/faiss_index/*.pkl
+stich/
