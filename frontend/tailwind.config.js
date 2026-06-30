@@ -1,61 +1,44 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: ["class"],
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+        // Core navy palette
+        navy: {
+          900: '#022448',  // primary — darkest
+          800: '#1e3a5f',  // primary container
+          700: '#2d486d',
         },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+        // Action blue
+        blue: {
+          600: '#0058be',  // secondary — buttons, CTAs
+          500: '#2170e4',  // secondary container — hover
+          100: '#d5e3ff',  // light blue tint
+          50:  '#e7eeff',  // surface container
         },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+        // Surface grays
+        slate: {
+          900: '#111c2d',  // on-surface — body text
+          600: '#43474e',  // on-surface-variant — secondary text
+          400: '#74777f',  // outline — muted text
+          300: '#c4c6cf',  // outline-variant — borders
+          100: '#f0f3ff',  // surface-container-low
+          50:  '#f9f9ff',  // surface — page background
         },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        // Semantic
+        success: '#10b981',
+        danger: '#ba1a1a',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      boxShadow: {
+        'ambient': '0 4px 24px -4px rgba(2, 36, 72, 0.08)',
+        'card': '0 1px 3px rgba(2, 36, 72, 0.06)',
       }
     },
   },
