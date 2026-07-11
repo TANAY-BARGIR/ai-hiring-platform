@@ -23,7 +23,7 @@ class ResumeSerializer(serializers.ModelSerializer):
             'id', 'file', 'file_url', 'original_filename', 'is_primary',
             'processing_status', 'failure_reason', 'uploaded_at',
         )
-        read_only_fields = ('id', 'processing_status', 'failure_reason', 'uploaded_at')
+        read_only_fields = ('id', 'original_filename', 'is_primary', 'processing_status', 'failure_reason', 'uploaded_at')
         extra_kwargs = {
             'file': {'write_only': True},
         }

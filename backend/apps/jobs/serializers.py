@@ -81,6 +81,15 @@ class ApplicationSerializer(serializers.ModelSerializer):
     candidate_email = serializers.EmailField(
         source='candidate.user.email', read_only=True,
     )
+    candidate_experience = serializers.IntegerField(
+        source='candidate.years_of_experience', read_only=True,
+    )
+    candidate_location = serializers.CharField(
+        source='candidate.location', read_only=True,
+    )
+    candidate_id = serializers.IntegerField(source='candidate.id', read_only=True)
+    candidate_skills = serializers.SerializerMethodField()
+    resume_url = serializers.SerializerMethodField()
     job_title = serializers.CharField(source='job.title', read_only=True)
     company_name = serializers.CharField(source='job.company.name', read_only=True)
 
@@ -88,13 +97,23 @@ class ApplicationSerializer(serializers.ModelSerializer):
         model = Application
         fields = (
             'id', 'job', 'job_title', 'company_name',
-            'candidate_name', 'candidate_email',
+            'candidate_id', 'candidate_name', 'candidate_email', 'candidate_experience',
+            'candidate_location', 'candidate_skills', 'resume_url',
             'resume', 'status', 'applied_at',
         )
         read_only_fields = ('id', 'applied_at')
 
     def get_candidate_name(self, obj):
         return obj.candidate.user.get_full_name() or obj.candidate.user.email
+
+    def get_candidate_skills(self, obj):
+        return [skill.name for skill in obj.candidate.skills.all()]
+        
+    def get_resume_url(self, obj):
+        request = self.context.get('request')
+        if obj.resume and obj.resume.file and request:
+            return request.build_absolute_uri(obj.resume.file.url)
+        return None
 
 
 class ApplicationCreateSerializer(serializers.ModelSerializer):

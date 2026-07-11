@@ -1,10 +1,28 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import Landing from './pages/Landing';
 import CandidateDashboard from './pages/CandidateDashboard';
 import RecruiterDashboard from './pages/RecruiterDashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import { AuthProvider, useAuth } from './context/AuthContext';
+
+function ProtectedRoute({ children, allowedRole }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="h-screen flex items-center justify-center text-slate-400">Loading...</div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRole && user.role !== allowedRole) {
+    return <Navigate to={user.role === 'RECRUITER' ? '/recruiter' : '/candidate'} replace />;
+  }
+
+  return children;
+}
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -43,8 +61,16 @@ function App() {
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/candidate" element={<CandidateDashboard />} />
-              <Route path="/recruiter" element={<RecruiterDashboard />} />
+              <Route path="/candidate" element={
+                <ProtectedRoute allowedRole="CANDIDATE">
+                  <CandidateDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/recruiter" element={
+                <ProtectedRoute allowedRole="RECRUITER">
+                  <RecruiterDashboard />
+                </ProtectedRoute>
+              } />
             </Routes>
           </main>
         </div>

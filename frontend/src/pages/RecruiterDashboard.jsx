@@ -180,9 +180,17 @@ function JobsTab() {
   const [selectedJob, setSelectedJob] = useState(null);
   const [applications, setApplications] = useState([]);
   const [appsLoading, setAppsLoading] = useState(false);
+  
+  // Chat state
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatResumeId, setChatResumeId] = useState(null);
+  const [chatCandidateName, setChatCandidateName] = useState('');
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
 
   const fetchJobs = async () => {
-    try { const res = await client.get('jobs/my-jobs/'); setJobs(res.data); } catch (e) { console.error(e); } finally { setLoading(false); }
+    try { const res = await client.get('jobs/my-jobs/'); setJobs(res.data.results || res.data); } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
   useEffect(() => { fetchJobs(); }, []);
@@ -200,8 +208,47 @@ function JobsTab() {
 
   const viewApplications = async (job) => {
     setSelectedJob(job); setAppsLoading(true);
-    try { const res = await client.get(`jobs/${job.id}/applications/`); setApplications(res.data); } catch { setApplications([]); }
+    try { 
+      const res = await client.get(`jobs/${job.id}/applications/`); 
+      let apps = res.data.results || res.data;
+      
+      try {
+        const searchRes = await client.post('search/', { query: job.title, top_k: 50 });
+        const aiMatches = searchRes.data.results || [];
+        const scoreMap = {};
+        aiMatches.forEach(match => {
+          if (match.id) scoreMap[match.id] = match.similarity_score;
+        });
+        apps = apps.map(app => ({
+          ...app,
+          relevance: scoreMap[app.candidate_id] || 0
+        }));
+        apps.sort((a, b) => b.relevance - a.relevance);
+      } catch (err) {
+        console.error("AI ranking failed for applications", err);
+      }
+      
+      setApplications(apps); 
+    } catch { setApplications([]); }
     finally { setAppsLoading(false); }
+  };
+
+  const openChat = (app) => {
+    if (!app.resume) { alert('No processed resume to chat with.'); return; }
+    setChatResumeId(app.resume);
+    setChatCandidateName(app.candidate_name || 'Candidate');
+    setChatMessages([]); setChatOpen(true);
+  };
+
+  const sendChat = async () => {
+    if (!chatInput.trim() || chatLoading) return;
+    const q = chatInput.trim(); setChatInput('');
+    setChatMessages(p => [...p, { role: 'user', content: q }]); setChatLoading(true);
+    try {
+      const res = await client.post('search/ask-resume/', { resume_id: chatResumeId, question: q });
+      setChatMessages(p => [...p, { role: 'assistant', content: res.data.answer, sources: res.data.source_chunks || [], chunksUsed: res.data.num_chunks_used || 0 }]);
+    } catch { setChatMessages(p => [...p, { role: 'assistant', content: 'Failed to get a response.', sources: [] }]); }
+    finally { setChatLoading(false); }
   };
 
   const updateAppStatus = async (appId, newStatus) => {
@@ -293,22 +340,83 @@ function JobsTab() {
             !applications.length ? <p className="py-8 text-center text-slate-400">No applications yet.</p> :
             <div className="space-y-3">
               {applications.map(app => (
-                <div key={app.id} className="border border-slate-200 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                  <div>
-                    <p className="font-medium text-navy-900">{app.candidate_name}</p>
-                    <p className="text-xs text-slate-400">{app.candidate_email} · Applied {new Date(app.applied_at).toLocaleDateString()}</p>
+                <div key={app.id} className="border border-slate-200 rounded-lg p-5 flex flex-col gap-3">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold text-navy-900">{app.candidate_name}</p>
+                        {app.relevance > 0 && <span className="bg-green-50 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded-full border border-green-200">{Math.round(app.relevance*100)}% Match</span>}
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${app.status === 'APPLIED' ? 'bg-blue-50 text-blue-600 border-blue-200' : app.status === 'SHORTLISTED' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>{app.status}</span>
+                      </div>
+                      <p className="text-xs text-slate-500">{app.candidate_email} · Applied {new Date(app.applied_at).toLocaleDateString()}</p>
+                      
+                      <div className="flex items-center gap-4 mt-2 text-xs text-slate-600">
+                        {app.candidate_location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-slate-400" /> {app.candidate_location}</span>}
+                        {app.candidate_experience !== undefined && <span className="flex items-center gap-1"><Briefcase className="w-3 h-3 text-slate-400" /> {app.candidate_experience} Years Exp.</span>}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                      <button onClick={() => openChat(app)} className="flex items-center gap-1.5 text-xs font-semibold bg-navy-900 text-white hover:bg-navy-800 px-3 py-1.5 rounded-md transition-colors"><MessageSquare className="w-3.5 h-3.5" /> Chat Resume</button>
+                      {app.resume_url && (
+                        <a href={app.resume_url} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-3 py-1.5 rounded-md transition-colors">
+                          View Resume
+                        </a>
+                      )}
+                      {app.status === 'APPLIED' && <>
+                        <button onClick={() => updateAppStatus(app.id, 'SHORTLISTED')} className="text-xs font-semibold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 px-3 py-1.5 rounded-md transition-colors">Shortlist</button>
+                        <button onClick={() => updateAppStatus(app.id, 'REJECTED')} className="text-xs font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 px-3 py-1.5 rounded-md transition-colors">Reject</button>
+                      </>}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${app.status === 'APPLIED' ? 'bg-blue-50 text-blue-600 border-blue-200' : app.status === 'SHORTLISTED' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>{app.status}</span>
-                    {app.status === 'APPLIED' && <>
-                      <button onClick={() => updateAppStatus(app.id, 'SHORTLISTED')} className="text-xs font-semibold text-green-600 hover:underline">Shortlist</button>
-                      <button onClick={() => updateAppStatus(app.id, 'REJECTED')} className="text-xs font-semibold text-red-500 hover:underline">Reject</button>
-                    </>}
-                  </div>
+                  
+                  {app.candidate_skills && app.candidate_skills.length > 0 && (
+                    <div className="pt-3 border-t border-slate-100">
+                      <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1.5">AI Extracted Skills</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {app.candidate_skills.map((skill, idx) => (
+                          <span key={idx} className="bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded text-[11px] font-medium">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           }
+        </div>
+      )}
+      
+      {/* Chat Modal for JobsTab */}
+      {chatOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
+          <div className="bg-white border border-slate-300 rounded-2xl w-full max-w-2xl h-[600px] flex flex-col shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
+              <div><h3 className="font-bold text-lg text-navy-900">Chat with Resume</h3><p className="text-xs text-slate-400">{chatCandidateName} · RAG</p></div>
+              <button onClick={() => setChatOpen(false)} className="text-slate-400 hover:text-slate-900 p-1 rounded hover:bg-slate-200"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+              {!chatMessages.length && <div className="text-center py-16 text-slate-400"><MessageSquare className="w-10 h-10 mx-auto mb-3" /><p className="text-sm">Ask about this resume</p></div>}
+              {chatMessages.map((m, i) => (
+                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${m.role === 'user' ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-slate-100 border border-slate-200 rounded-bl-sm text-slate-900'}`}>
+                    <p className="text-sm whitespace-pre-wrap">{m.content}</p>
+                    {m.sources?.length > 0 && <details className="mt-3 border-t border-slate-200/50 pt-2"><summary className="text-xs text-slate-400 cursor-pointer"><ChevronDown className="w-3 h-3 inline" /> {m.chunksUsed} sources</summary><div className="mt-2 space-y-1">{m.sources.map((s,j)=><div key={j} className="bg-white border border-slate-200 rounded p-2 text-xs text-slate-600">"{s}"</div>)}</div></details>}
+                  </div>
+                </div>
+              ))}
+              {chatLoading && <div className="flex justify-start"><div className="bg-slate-100 border border-slate-200 rounded-2xl px-4 py-3"><Loader2 className="w-5 h-5 animate-spin text-blue-600" /></div></div>}
+            </div>
+            <div className="px-6 py-4 border-t border-slate-200">
+              <div className="flex gap-3">
+                <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
+                  placeholder="Ask about this resume..." className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/30" disabled={chatLoading} />
+                <button onClick={sendChat} disabled={chatLoading || !chatInput.trim()} className="bg-navy-900 text-white px-4 py-3 rounded-xl hover:bg-navy-800 disabled:opacity-50"><Send className="w-4 h-4" /></button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

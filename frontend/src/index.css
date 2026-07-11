@@ -9,3 +9,8 @@
     @apply bg-slate-50 text-slate-900 font-sans antialiased;
   }
 }
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
